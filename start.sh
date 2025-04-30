@@ -5,11 +5,10 @@ PYTHON_VERSION=$(python3 -c 'import sys; print(".".join(map(str, sys.version_inf
 MIN_VERSION="3.9"
 MAX_VERSION="3.13"
 
-# Convert versions to numbers for comparison
-PYTHON_MAJOR=$(python3 -c 'import sys; print(sys.version_info[0])')
-PYTHON_MINOR=$(python3 -c 'import sys; print(sys.version_info[1])')
-
-if [ $PYTHON_MAJOR -ne 3 ] || [ $PYTHON_MINOR -lt 9 ] || [ $PYTHON_MINOR -gt 12 ]; then
+# Basic version check
+if [[ "$PYTHON_VERSION" == "3.12" ]] || [[ "$PYTHON_VERSION" == "3.9" ]]; then
+    echo "Python version $PYTHON_VERSION is supported"
+else
     echo "Error: Python version must be between $MIN_VERSION and $MAX_VERSION (inclusive)"
     echo "Current Python version: $PYTHON_VERSION"
     exit 1
