@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# Check Python version
+PYTHON_VERSION=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
+MIN_VERSION="3.9"
+MAX_VERSION="3.12"
+
+if [[ $(echo "$PYTHON_VERSION >= $MIN_VERSION && $PYTHON_VERSION <= $MAX_VERSION" | bc -l) -eq 0 ]]; then
+    echo "Error: Python version must be between $MIN_VERSION and $MAX_VERSION"
+    echo "Current Python version: $PYTHON_VERSION"
+    exit 1
+fi
+
 # Check if Python is installed
 if ! command -v python3 &> /dev/null; then
     echo "Python 3 is required but not installed. Please install Python 3."

@@ -8,18 +8,18 @@ version = "1.0.0"
 description = "A web application for matching students with schools based on preferences"
 requires-python = ">=3.9,<3.13"
 dependencies = [
-    "Flask==2.0.1",
-    "Werkzeug==2.0.3",
-    "Flask-SQLAlchemy==2.5.1",
-    "Flask-Cors==3.0.10",
-    "pandas==2.1.4",
-    "openpyxl==3.0.9",
-    "numpy==1.24.3",
-    "pulp==2.7.0",
-    "psycopg2-binary==2.9.7",
-    "python-dotenv==0.19.0",
-    "SQLAlchemy==1.4.23",
-    "chardet==4.0.0"
+    "Flask>=2.0.1,<3.0.0",
+    "Werkzeug>=2.0.3,<3.0.0",
+    "Flask-SQLAlchemy>=2.5.1,<4.0.0",
+    "Flask-Cors>=3.0.10,<5.0.0",
+    "pandas>=2.1.4,<3.0.0",
+    "openpyxl>=3.0.9,<4.0.0",
+    "numpy>=1.24.3,<2.0.0",
+    "pulp>=2.7.0,<3.0.0",
+    "psycopg2-binary>=2.9.7,<3.0.0",
+    "python-dotenv>=0.19.0,<2.0.0",
+    "SQLAlchemy>=1.4.23,<3.0.0",
+    "chardet>=4.0.0,<6.0.0"
 ]
 
 [project.optional-dependencies]
@@ -31,5 +31,5 @@ dev = [
 
 [tool.black]
 line-length = 88
-target-version = ['py39']
+target-version = ['py312']
 include = '\.pyi?$' 

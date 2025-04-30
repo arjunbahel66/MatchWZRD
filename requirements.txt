@@ -1,13 +1,13 @@
 # Backend dependencies
-Flask==2.0.1
-Werkzeug==2.0.3
-Flask-SQLAlchemy==2.5.1
-Flask-Cors==3.0.10
+Flask==2.3.3
+Werkzeug==2.3.7
+Flask-SQLAlchemy==3.1.1
+Flask-Cors==4.0.0
 pandas==2.1.4
-openpyxl==3.0.9
-numpy==1.24.3
+openpyxl==3.1.2
+numpy==1.26.2
 pulp==2.7.0  # For optimization/matching algorithm
-psycopg2-binary==2.9.7  # For PostgreSQL connection
-python-dotenv==0.19.0
-SQLAlchemy==1.4.23
-chardet==4.0.0  # For character encoding detection
+psycopg2-binary==2.9.9  # For PostgreSQL connection
+python-dotenv==1.0.0
+SQLAlchemy==2.0.23
+chardet==5.2.0  # For character encoding detection
