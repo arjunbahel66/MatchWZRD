@@ -5,7 +5,12 @@ PYTHON_VERSION=$(python3 -c 'import sys; print(".".join(map(str, sys.version_inf
 MIN_VERSION="3.9"
 MAX_VERSION="3.12"
 
-if [[ $(echo "$PYTHON_VERSION >= $MIN_VERSION && $PYTHON_VERSION <= $MAX_VERSION" | bc -l) -eq 0 ]]; then
+# Convert versions to numbers for comparison
+PYTHON_MAJOR_MINOR=$(echo $PYTHON_VERSION | awk -F. '{print $1"."$2}')
+MIN_MAJOR_MINOR=$(echo $MIN_VERSION | awk -F. '{print $1"."$2}')
+MAX_MAJOR_MINOR=$(echo $MAX_VERSION | awk -F. '{print $1"."$2}')
+
+if (( $(echo "$PYTHON_MAJOR_MINOR < $MIN_MAJOR_MINOR" | bc -l) )) || (( $(echo "$PYTHON_MAJOR_MINOR > $MAX_MAJOR_MINOR" | bc -l) )); then
     echo "Error: Python version must be between $MIN_VERSION and $MAX_VERSION"
     echo "Current Python version: $PYTHON_VERSION"
     exit 1
