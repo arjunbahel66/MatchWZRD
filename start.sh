@@ -10,7 +10,8 @@ PYTHON_MAJOR_MINOR=$(echo $PYTHON_VERSION | awk -F. '{print $1"."$2}')
 MIN_MAJOR_MINOR=$(echo $MIN_VERSION | awk -F. '{print $1"."$2}')
 MAX_MAJOR_MINOR=$(echo $MAX_VERSION | awk -F. '{print $1"."$2}')
 
-if (( $(echo "$PYTHON_MAJOR_MINOR < $MIN_MAJOR_MINOR" | bc -l) )) || (( $(echo "$PYTHON_MAJOR_MINOR > $MAX_MAJOR_MINOR" | bc -l) )); then
+# Compare versions numerically
+if (( $(echo "$PYTHON_MAJOR_MINOR < $MIN_MAJOR_MINOR" | bc -l) )) || (( $(echo "$PYTHON_MAJOR_MINOR >= $MAX_MAJOR_MINOR" | bc -l) )); then
     echo "Error: Python version must be between $MIN_VERSION and $MAX_VERSION (inclusive)"
     echo "Current Python version: $PYTHON_VERSION"
     exit 1
