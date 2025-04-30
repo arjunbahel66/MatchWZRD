@@ -3,7 +3,7 @@
 # Check Python version
 PYTHON_VERSION=$(python3 -c 'import sys; print(".".join(map(str, sys.version_info[:2])))')
 MIN_VERSION="3.9"
-MAX_VERSION="3.12"
+MAX_VERSION="3.13"
 
 # Convert versions to numbers for comparison
 PYTHON_MAJOR_MINOR=$(echo $PYTHON_VERSION | awk -F. '{print $1"."$2}')
