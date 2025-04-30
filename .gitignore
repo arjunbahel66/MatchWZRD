@@ -8,9 +8,9 @@ uploads/
 
 # Python
 __pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.py[cod]
+*$py.class
+*.so
 .Python
 env/
 venv/
@@ -29,4 +29,17 @@ venv/
 
 # OS
 .DS_Store
-Thumbs.db 
+Thumbs.db
+
+# Logs
+*.log
+backend.log
+
+# Virtual Environment
+venv/
+ENV/
+
+# Node
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log* 
