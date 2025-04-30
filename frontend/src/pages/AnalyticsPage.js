@@ -20,8 +20,6 @@ import {
 } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
-
 const AnalyticsPage = () => {
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -72,31 +70,6 @@ const AnalyticsPage = () => {
     );
   }
 
-  // Calculate percentages for top choices
-  const totalStudents = analytics.top_choices.total_students || 0;
-  const topChoiceData = [
-    { 
-      name: '1st Choice', 
-      value: analytics.top_choices.first_choice,
-      percentage: totalStudents > 0 ? (analytics.top_choices.first_choice / totalStudents * 100).toFixed(1) : 0
-    },
-    { 
-      name: '2nd Choice', 
-      value: analytics.top_choices.second_choice,
-      percentage: totalStudents > 0 ? (analytics.top_choices.second_choice / totalStudents * 100).toFixed(1) : 0
-    },
-    { 
-      name: '3rd Choice', 
-      value: analytics.top_choices.third_choice,
-      percentage: totalStudents > 0 ? (analytics.top_choices.third_choice / totalStudents * 100).toFixed(1) : 0
-    },
-    { 
-      name: 'Other', 
-      value: analytics.top_choices.other_choice,
-      percentage: totalStudents > 0 ? (analytics.top_choices.other_choice / totalStudents * 100).toFixed(1) : 0
-    },
-  ];
-
   const schoolData = Object.values(analytics.school_stats)
     .map(school => ({
       name: school.name,
@@ -143,7 +116,7 @@ const AnalyticsPage = () => {
                 </Grid>
                 <Grid item xs={4}>
                   <Typography variant="body1">
-                    Students with At Least One Top 3 Choice: {analytics.top_choices.students_with_at_least_one_top_3} ({totalStudents > 0 ? ((analytics.top_choices.students_with_at_least_one_top_3 / totalStudents * 100).toFixed(1)) : 0}%)
+                    Students with At Least One Top 3 Choice: {analytics.top_choices.students_with_at_least_one_top_3} ({analytics.top_choices.total_students > 0 ? ((analytics.top_choices.students_with_at_least_one_top_3 / analytics.top_choices.total_students * 100).toFixed(1)) : 0}%)
                   </Typography>
                 </Grid>
               </Grid>

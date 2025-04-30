@@ -28,7 +28,18 @@ source venv/bin/activate
 
 # Install Python dependencies
 echo "Installing Python dependencies..."
+# Upgrade pip first
+python3 -m pip install --upgrade pip
+# Install wheel
+pip install wheel
+# Install dependencies
 pip install -r requirements.txt
+
+# Check if all dependencies are installed
+if ! python3 -c "import flask, pandas" &> /dev/null; then
+    echo "Failed to install required Python packages. Please check the error messages above."
+    exit 1
+fi
 
 # Initialize database
 echo "Initializing database..."
@@ -44,13 +55,14 @@ cd ..
 echo "Starting the application..."
 echo "Open http://localhost:3000 in your browser once both servers are running."
 
-# Start backend in background
-python app.py &
-BACKEND_PID=$!
+# Start backend in a new terminal window
+echo "Starting backend server..."
+osascript -e 'tell app "Terminal" to do script "cd '"$(pwd)"' && source venv/bin/activate && python app.py"'
 
-# Start frontend
-cd frontend
-npm start
+# Start frontend in a new terminal window
+echo "Starting frontend server..."
+osascript -e 'tell app "Terminal" to do script "cd '"$(pwd)"'/frontend && npm start"'
 
-# Cleanup on exit
-trap "kill $BACKEND_PID" EXIT 
+echo "Both servers have been started in separate terminal windows."
+echo "You can monitor their output in the respective terminal windows."
+echo "Press Ctrl+C in each terminal window to stop the respective server." 

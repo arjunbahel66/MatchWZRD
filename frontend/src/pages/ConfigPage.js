@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Container, Typography, Paper, Button, Grid, Box, Alert, CircularProgress, TextField, InputAdornment, IconButton, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import { useDropzone } from 'react-dropzone';
-import { DataGrid, GridToolbar, GridToolbarContainer, GridToolbarFilterButton, GridToolbarExport, GridToolbarColumnsButton, GridToolbarDensitySelector } from '@mui/x-data-grid';
+import { DataGrid, GridToolbarContainer, GridToolbarFilterButton, GridToolbarExport, GridToolbarColumnsButton, GridToolbarDensitySelector } from '@mui/x-data-grid';
 import { styled } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
@@ -13,17 +13,6 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import SaveIcon from '@mui/icons-material/Save';
 import EditIcon from '@mui/icons-material/Edit';
 import axios from 'axios';
-
-const FileUploadBox = styled(Box)(({ theme }) => ({
-  border: '2px dashed #cccccc',
-  borderRadius: theme.shape.borderRadius,
-  padding: theme.spacing(3),
-  textAlign: 'center',
-  cursor: 'pointer',
-  '&:hover': {
-    backgroundColor: theme.palette.action.hover,
-  },
-}));
 
 const ConfigPage = () => {
   const [file, setFile] = useState(null);
@@ -41,7 +30,8 @@ const ConfigPage = () => {
   const [editValue, setEditValue] = useState('');
 
   // Use memoized data for the grid
-  const gridData = useMemo(() => {
+  const processedData = useMemo(() => {
+    if (!uploadedData) return [];
     return searchText ? filteredData : uploadedData;
   }, [searchText, filteredData, uploadedData]);
 
@@ -297,10 +287,10 @@ const ConfigPage = () => {
 
   // Combine data with total row
   useEffect(() => {
-    if (!gridData) return;
+    if (!processedData) return;
     
     // Add rowTotal to each row
-    const dataWithRowTotals = gridData.map(row => {
+    const dataWithRowTotals = processedData.map(row => {
       let rowTotal = 0;
       Object.keys(row).forEach(key => {
         if (key !== 'id') {
@@ -314,7 +304,7 @@ const ConfigPage = () => {
     });
     
     setGridDataWithTotal([...dataWithRowTotals, totalRow].filter(Boolean));
-  }, [gridData, totalRow]);
+  }, [processedData, totalRow]);
 
   // Add a ref to the DataGrid
   const dataGridRef = React.useRef(null);
@@ -681,34 +671,6 @@ const ConfigPage = () => {
     },
     multiple: false
   });
-
-  const handleSaveConfig = async () => {
-    if (!uploadedData) {
-      setUploadStatus({
-        type: 'error',
-        message: 'Please upload data first.'
-      });
-      return;
-    }
-
-    try {
-      const response = await axios.post('/api/config', { data: uploadedData });
-
-      if (response.status === 200) {
-        setUploadStatus({
-          type: 'success',
-          message: 'Configuration saved successfully!'
-        });
-      } else {
-        throw new Error(response.data.error || 'Saving failed');
-      }
-    } catch (error) {
-      setUploadStatus({
-        type: 'error',
-        message: error.message
-      });
-    }
-  };
 
   // Add a function to load data from the database
   const loadDataFromDatabase = async () => {
