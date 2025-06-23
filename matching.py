@@ -6,10 +6,11 @@ import random
 
 def run_matching_algorithm():
     """
-    Simple matching algorithm that:
+    Improved matching algorithm that:
     1. Creates a sorted list of all bids with random tiebreakers
-    2. For each student, only considers their top 6 bids
+    2. Includes ALL student preferences (not just top 6)
     3. Processes bids in order, assigning students to sessions based on capacity
+    4. Ensures every student gets exactly 6 sessions
     """
     # Get all data from database
     students = Student.query.all()
@@ -35,7 +36,7 @@ def run_matching_algorithm():
             6: school.session6_capacity
         }
     
-    # Step 1: Create a list of all bids with random tiebreakers
+    # Step 1: Create a list of ALL bids with random tiebreakers
     all_bids = []
     for student in students:
         for school in schools:
@@ -54,23 +55,11 @@ def run_matching_algorithm():
     # Sort bids by points (descending) and then by tiebreaker (ascending)
     all_bids.sort(key=lambda x: (-x['points'], x['tiebreaker']))
     
-    # Step 2: For each student, keep only their top 6 bids
-    student_bid_counts = {}
-    filtered_bids = []
-    for bid in all_bids:
-        student_id = bid['student_id']
-        if student_id not in student_bid_counts:
-            student_bid_counts[student_id] = 0
-        
-        if student_bid_counts[student_id] < 6:
-            filtered_bids.append(bid)
-            student_bid_counts[student_id] += 1
-    
-    # Step 3: Process bids in order and assign to sessions
+    # Step 2: Process ALL bids in order and assign to sessions
     matches = []
     session_assignments = {}  # Track which students are assigned to which sessions
     
-    for bid in filtered_bids:
+    for bid in all_bids:
         student_id = bid['student_id']
         school_id = bid['school_id']
         
@@ -108,10 +97,58 @@ def run_matching_algorithm():
                     student_id=student_id,
                     school_id=school_id,
                     session_number=session_num,
-                    algorithm_used='simple_matching'
+                    algorithm_used='improved_matching'
                 )
                 db.session.add(db_match)
                 break
+    
+    # Step 3: Ensure every student has exactly 6 sessions
+    for student in students:
+        student_id = student.id
+        student_sessions = session_assignments.get(student_id, set())
+        
+        # If student doesn't have 6 sessions, fill remaining slots
+        while len(student_sessions) < 6:
+            # Find the next available session number
+            for session_num in range(1, 7):
+                if session_num not in student_sessions:
+                    # Find any school with capacity in this session
+                    assigned = False
+                    for school in schools:
+                        if school_capacities[school.id][session_num] > 0:
+                            # Create fallback match
+                            match = {
+                                'student_id': student_id,
+                                'student_name': f"{student.first_name} {student.last_name}",
+                                'school_id': school.id,
+                                'school_name': school.school_name,
+                                'session_number': session_num,
+                                'preference_score': 0  # Fallback assignment
+                            }
+                            matches.append(match)
+                            
+                            # Update capacities and assignments
+                            school_capacities[school.id][session_num] -= 1
+                            student_sessions.add(session_num)
+                            
+                            # Create Match object in database
+                            db_match = MatchingResult(
+                                student_id=student_id,
+                                school_id=school.id,
+                                session_number=session_num,
+                                algorithm_used='improved_matching_fallback'
+                            )
+                            db.session.add(db_match)
+                            assigned = True
+                            break
+                    
+                    if assigned:
+                        break
+                    else:
+                        # If no school has capacity in this session, we have a problem
+                        print(f"WARNING: No capacity available for student {student_id} in session {session_num}")
+                        # Continue to next session number
+                        continue
     
     # Commit changes to database
     db.session.commit()
@@ -381,3 +418,36 @@ def run_simple_matching_algorithm():
             'school_fill_rates': school_fill_rates
         }
     }
+
+def get_students_without_top_3_picks():
+    """
+    Identify students who didn't get any of their top 3 school preferences
+    """
+    from database import Student, Preference, MatchingResult
+    
+    students = Student.query.all()
+    students_without_top_3 = []
+    
+    for student in students:
+        # Get student's top 3 school preferences
+        top_3_preferences = Preference.query.filter_by(student_id=student.id)\
+            .order_by(Preference.points.desc()).limit(3).all()
+        
+        top_3_school_ids = [pref.school_id for pref in top_3_preferences]
+        
+        # Get student's actual assignments
+        student_matches = MatchingResult.query.filter_by(student_id=student.id).all()
+        assigned_school_ids = [match.school_id for match in student_matches]
+        
+        # Check if student got any of their top 3
+        got_top_3 = any(school_id in assigned_school_ids for school_id in top_3_school_ids)
+        
+        if not got_top_3:
+            students_without_top_3.append({
+                'student_id': student.id,
+                'student_name': f"{student.first_name} {student.last_name}",
+                'top_3_schools': [pref.school.school_name for pref in top_3_preferences],
+                'assigned_schools': [match.school.school_name for match in student_matches]
+            })
+    
+    return students_without_top_3

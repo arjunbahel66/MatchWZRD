@@ -905,7 +905,7 @@ def process_preferences():
         
         # Import and run the matching algorithm
         print("Running matching algorithm...")
-        from matching import run_matching_algorithm
+        from matching import run_matching_algorithm, get_students_without_top_3_picks
         result = run_matching_algorithm()
         
         if "error" in result:
