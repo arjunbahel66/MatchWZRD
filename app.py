@@ -1,5 +1,5 @@
 import os
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, send_file
 from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
@@ -10,6 +10,7 @@ import io
 from werkzeug.utils import secure_filename
 import json
 import chardet
+from io import BytesIO
 
 # Load environment variables
 load_dotenv()
@@ -481,6 +482,7 @@ def get_results():
                 'id': result.id,
                 'student_id': result.student_id,
                 'student_name': f"{result.student.first_name} {result.student.last_name}",
+                'student_email': result.student.email,  # Add email to the response
                 'school_id': result.school_id,
                 'school_name': result.school.school_name,
                 'session_number': result.session_number,
@@ -932,6 +934,7 @@ def process_preferences():
                 'id': match.id,
                 'student_id': match.student_id,
                 'student_name': f"{match.student.first_name} {match.student.last_name}",
+                'student_email': match.student.email,  # Add email to the response
                 'school_id': match.school_id,
                 'school_name': match.school.school_name,
                 'session_number': match.session_number,
@@ -976,6 +979,56 @@ def check_preferences():
         return jsonify({'exists': preferences is not None})
     except Exception as e:
         return jsonify({'exists': False, 'error': str(e)})
+
+# Export results endpoint
+@app.route('/api/results/export', methods=['GET'])
+def export_results():
+    try:
+        import pandas as pd
+        from io import BytesIO
+        
+        # Get all matching results from the database
+        results = MatchingResult.query.all()
+        
+        # Convert to a list of dictionaries for pandas
+        data = []
+        for result in results:
+            # Get preference score using a query
+            preference = Preference.query.filter_by(
+                student_id=result.student_id,
+                school_id=result.school_id
+            ).first()
+            
+            data.append({
+                'Student Name': f"{result.student.first_name} {result.student.last_name}",
+                'Email': result.student.email,
+                'School': result.school.school_name,
+                'Session': result.session_number,
+                'Match Score': preference.points if preference else 0
+            })
+        
+        # Create DataFrame
+        df = pd.DataFrame(data)
+        
+        # Create Excel file in memory
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='openpyxl') as writer:
+            df.to_excel(writer, index=False, sheet_name='Matching Results')
+        
+        # Prepare the response
+        output.seek(0)
+        
+        return send_file(
+            output,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            as_attachment=True,
+            download_name='matching_results.xlsx'
+        )
+        
+    except Exception as e:
+        return jsonify({
+            'error': f'Error exporting results: {str(e)}'
+        }), 500
 
 # Serve React frontend in production
 @app.route('/', defaults={'path': ''})

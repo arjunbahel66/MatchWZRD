@@ -86,10 +86,37 @@ const ResultsPage = () => {
     setIsLoading(false);
   };
 
-  const handleExport = () => {
-    // Here you would typically implement export functionality
-    console.log('Exporting matches:', matches);
-    alert('Matches exported successfully!');
+  const handleExport = async () => {
+    try {
+      const response = await fetch('/api/results/export');
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to export results');
+      }
+      
+      // Get the blob from the response
+      const blob = await response.blob();
+      
+      // Create a URL for the blob
+      const url = window.URL.createObjectURL(blob);
+      
+      // Create a temporary link element
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'matching_results.xlsx';
+      
+      // Append to body, click, and remove
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // Clean up the URL
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error exporting results:', error);
+      alert(`Error exporting results: ${error.message}`);
+    }
   };
 
   return (
@@ -159,6 +186,7 @@ const ResultsPage = () => {
                         <TableHead>
                           <TableRow>
                             <TableCell><strong>Student</strong></TableCell>
+                            <TableCell><strong>Email</strong></TableCell>
                             <TableCell><strong>School</strong></TableCell>
                             <TableCell><strong>Session</strong></TableCell>
                             <TableCell><strong>Match Score</strong></TableCell>
@@ -168,6 +196,7 @@ const ResultsPage = () => {
                           {matches.map((match) => (
                             <TableRow key={match.id}>
                               <TableCell>{match.student_name}</TableCell>
+                              <TableCell>{match.student_email}</TableCell>
                               <TableCell>{match.school_name}</TableCell>
                               <TableCell>{match.session_number}</TableCell>
                               <TableCell>{typeof match.preference_score === 'object' ? match.preference_score.points : match.preference_score}</TableCell>
